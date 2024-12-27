@@ -1,33 +1,43 @@
 package com.example.layout
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import android.widget.EditText
-import androidx.activity.enableEdgeToEdge
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.example.layout.databinding.ActivityMainBinding
+import com.google.firebase.auth.FirebaseAuth
 
-@SuppressLint("StaticFieldLeak")
-private lateinit var binding: ActivityMainBinding
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var firebaseAuth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Khởi chạy màn hình Đăng nhập
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
-        finish() // Đóng MainActivity sau khi chuyển sang LoginActivity
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        // Khởi tạo FirebaseAuth
+        firebaseAuth = FirebaseAuth.getInstance()
+
+        // Kiểm tra trạng thái đăng nhập
+        val currentUser = firebaseAuth.currentUser
+        if (currentUser == null) {
+            // Nếu chưa đăng nhập, chuyển đến LoginActivity
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish() // Đóng MainActivity
+        } else {
+            // Nếu đã đăng nhập, hiển thị giao diện chính
+            setContentView(R.layout.activity_main)
+
+            // Hiển thị email của người dùng (nếu có)
+
+            // Xử lý nút Đăng xuất
+            val btnLogout = findViewById<Button>(R.id.btnLogout)
+            btnLogout.setOnClickListener {
+                firebaseAuth.signOut()
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+                finish() // Đóng MainActivity
+            }
         }
-
-
-
     }
 }
