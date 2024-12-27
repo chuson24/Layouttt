@@ -49,13 +49,14 @@
         android:text="Đăng nhập" />
 
     <!-- Nút Chuyển sang Đăng Ký -->
-    <Button
-        android:id="@+id/button"
-        android:layout_width="200dp"
+
+    <TextView
+        android:id="@+id/ResetPassWord"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:gravity="center"
         android:layout_marginTop="5dp"
-        android:text="Đăng nhập với Google" />
+        android:text="Quên mật khẩu ?" />
 
     <TextView
         android:id="@+id/tvSwitchToRegister"

@@ -32,25 +32,65 @@ class RegisterActivity : AppCompatActivity() {
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
             } else {
-                registerUser(email, password)
+                // Kiểm tra xem email có tồn tại hay không
+                checkIfEmailExists(email, password)
             }
         }
+    }
+
+    private fun checkIfEmailExists(email: String, password: String) {
+        firebaseAuth.fetchSignInMethodsForEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val signInMethods = task.result?.signInMethods
+                    if (signInMethods.isNullOrEmpty()) {
+                        // Email không tồn tại, tiến hành đăng ký
+                        registerUser(email, password)
+                    } else {
+                        // Email đã tồn tại
+                        Toast.makeText(this, "Email đã được sử dụng!", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Lỗi khi kiểm tra email
+                    val errorMessage = task.exception?.message ?: "Lỗi không xác định."
+                    Toast.makeText(this, "Lỗi: $errorMessage", Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 
     private fun registerUser(email: String, password: String) {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Đăng ký thành công
-                    Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show()
-                    // Chuyển về màn hình chính (MainActivity)
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish() // Kết thúc RegisterActivity
+                    // Gửi email xác thực
+                    val user = firebaseAuth.currentUser
+                    user?.sendEmailVerification()
+                        ?.addOnCompleteListener { emailTask ->
+                            if (emailTask.isSuccessful) {
+                                Toast.makeText(
+                                    this,
+                                    "Đăng ký thành công! Kiểm tra email để xác thực tài khoản.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                // Chuyển về LoginActivity
+                                val intent = Intent(this, LoginActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                Toast.makeText(
+                                    this,
+                                    "Gửi email xác thực thất bại: ${emailTask.exception?.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                 } else {
-                    // Đăng ký thất bại
-                    val errorMessage = task.exception?.message ?: "Đăng ký thất bại!"
-                    Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Đăng ký thất bại: ${task.exception?.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
     }
