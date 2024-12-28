@@ -33,10 +33,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-        // thêm dòng này để sử dụng viewbinding
-        buildFeatures {
-            viewBinding = true
-        }
+
     }
 }
 
